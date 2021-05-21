@@ -1,18 +1,37 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="Home">
+    <!-- <rx-button type="green">点我</rx-button> -->
+    <div class="navigation">
+      <rx-button type="green" @click="jump">开始吧！</rx-button>
+    </div>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue';
+import { useRouter } from 'vue-router';
+import { reactive, ref, toRefs, onMounted, computed } from 'vue';
 
 export default {
   name: 'Home',
   components: {
-    HelloWorld,
   },
+  setup() {
+    const route = useRouter();
+    const jump = () => {
+      route.push('/UserRoom');
+    };
+    return {
+      jump
+    };
+  }
 };
 </script>
+
+<style lang="less">
+.navigation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>
