@@ -60,7 +60,7 @@ export default {
       window.localStorage.setItem('roomName', state.userDetail.roomName);
       window.localStorage.setItem('client', state.userDetail.client);
       dialogVisible.value = false;
-      state.socket = io('http://127.0.0.1:3000');
+      state.socket = io();
       const video = document.querySelector('#video');
       state.peer = new RTCPeerConnection(null);
       state.peer.onaddstream = (obj) => {

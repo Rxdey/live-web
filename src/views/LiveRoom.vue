@@ -73,7 +73,7 @@ export default {
     };
     const handleStop = () => { };
     onMounted(() => {
-      state.socket = io('http://127.0.0.1:3000');
+      state.socket = io();
       state.socket.emit('joinRoom', state.userDetail, (data) => {
         console.log(`up加入房间：${JSON.stringify(data)}`);
       });
