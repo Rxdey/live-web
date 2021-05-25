@@ -2,7 +2,7 @@
   <div class="Home">
     <!-- <rx-button type="green">点我</rx-button> -->
     <div class="navigation">
-      <rx-button type="green" @click="jump">开始吧！</rx-button>
+      <el-button type="success" @click="jump">开始吧！</el-button>
     </div>
   </div>
 </template>

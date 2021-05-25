@@ -4,77 +4,110 @@
       <video id="video" autoplay playsinline controls="controls"></video>
     </div>
     <div class="button-wrap">
-      <rx-button type="red" @click="handleJoin">开始</rx-button>
-      <rx-button @click="handleStop">停止</rx-button>
+      <el-button type="danger" @click="handleJoin">开始</el-button>
+      <el-button @click="handleStop">停止</el-button>
     </div>
   </div>
 </template>
 
 <script>
-import { reactive, ref, toRefs, onMounted, onUnmounted } from '@vue/runtime-dom';
-import { useLiveStart } from './composition';
+import { getCurrentInstance, onMounted, reactive, ref, toRefs } from '@vue/runtime-dom';
+import { io } from 'socket.io-client';
 
 export default {
   name: 'LiveRoom',
   components: {
   },
   setup(props, context) {
-    const currentDetail = {
-      roomName: 'rxdey',
-      client: 'Up',
-      userType: 1
+    const { proxy } = getCurrentInstance();
+    const state = reactive({
+      userDetail: {
+        roomName: 'rxdey',
+        client: 'Up',
+        userType: 1,
+        userId: 1
+      },
+      peerList: [],
+      localStream: null,
+      socket: null,
+      peer: null
+    });
+    const sendMessage = (message, socketId = null) => {
+      const msg = { msg: message, ...state.userDetail, socketId };
+      state.socket.emit('message', msg);
     };
-
-    const { socket, peer, sendMessage } = useLiveStart(currentDetail, true);
-    // 创建offer
-    const createOffer = (cp) => {
-      cp.createOffer(sessionDescription => {
+    const createOffer = (peer, socketId = null) => {
+      peer.createOffer(sessionDescription => {
         peer.setLocalDescription(sessionDescription);
-        console.log('setLocalAndSendMessage sending message');
-        sendMessage(socket, sessionDescription);
+        sendMessage(sessionDescription, socketId);
       }, error => {
         console.log(error);
       });
     };
-    onMounted(async () => {
-      socket.emit('joinRoom', { roomName: currentDetail.roomName }, async (data) => {
-        console.log(`加入房间：${JSON.stringify(data)}`);
-      });
-      socket.on('receiveMsg', data => {
-        const { state } = data;
-        if (state === 2) {
-          createOffer(peer);
-        }
-        console.log(data);
-      });
-    });
-    onUnmounted(() => {
-      peer.close();
-      socket.emit('leaveRoom', { roomName: currentDetail.roomName });
-    });
-
-    const handleJoin = async () => {
-      const video = document.querySelector('#video');
-      const localstream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-      video.srcObject = localstream;
+    const createPeer = (stream, data) => {
+      const peer = new RTCPeerConnection(null);
       peer.onicecandidate = (event) => {
         if (!event.candidate) return;
-        sendMessage(socket, {
+        sendMessage({
           type: 'candidate',
           label: event.candidate.sdpMLineIndex,
           id: event.candidate.sdpMid,
           candidate: event.candidate.candidate
-        });
+        }, data.socketId);
       };
-      peer.addStream(localstream);
-      createOffer(peer);
+      if (stream) {
+        peer.addStream(stream);
+        createOffer(peer, data.socketId);
+      }
+      return peer;
     };
-    const handleStop = async () => {
-      if (!peer) return;
-      peer.close();
+    const handleJoin = async () => {
+      const video = document.querySelector('#video');
+      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      video.srcObject = localStream;
+      state.localStream = localStream;
+      state.peerList.map(item => {
+        item.peer.addStream(localStream);
+        createOffer(item.peer);
+      });
     };
-
+    const handleStop = () => { };
+    onMounted(() => {
+      state.socket = io('http://127.0.0.1:3000');
+      state.socket.emit('joinRoom', state.userDetail, (data) => {
+        console.log(`up加入房间：${JSON.stringify(data)}`);
+      });
+      state.socket.on('receiveMsg', data => {
+        console.log(data);
+        // 用户进入房间，创建一个连接
+        if (data.state === 2) {
+          const peer = createPeer(state.localStream || false, data);
+          state.peerList.push({
+            ...data,
+            peer
+          });
+        }
+      });
+      // 主机端只接收answer
+      state.socket.on('message', data => {
+        const { msg } = data;
+        console.log('服务连接:', msg.type);
+        if (msg.type === 'answer') {
+          state.peerList.map(item => {
+            if (item.userId === data.userId) {
+              item.peer.setRemoteDescription(new RTCSessionDescription(msg));
+            }
+          });
+        }
+        if (msg.type === 'bye') {
+          const leavePeer = state.peerList.find(item => item.userId === data.userId);
+          leavePeer.peer.close();
+          state.peerList = state.peerList.filter(item => item.userId !== data.userId);
+        }
+      });
+    });
     return {
+      ...toRefs(state),
       handleJoin,
       handleStop
     };
@@ -92,10 +125,24 @@ export default {
     margin-bottom: 30px;
   }
   #video {
-    width: 800px;
-    height: 400px;
+    width: 980px;
+    max-width: 100%;
+    height: 450px;
     background: #333;
     outline: none;
+  }
+}
+@media screen and (max-width: 980px) {
+  .live-room {
+    padding: 0;
+  }
+}
+@media screen and (max-width: 680px) {
+  .live-room {
+    #video {
+      height: 320px;
+      max-height: 40%;
+    }
   }
 }
 </style>
