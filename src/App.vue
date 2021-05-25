@@ -1,9 +1,12 @@
 <template>
-  <router-view/>
+  <router-view />
 </template>
 
 <style lang="less">
-@import url('./assets/less/reset.less');
+@import url("./assets/less/reset.less");
+body {
+  background: #191a20;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

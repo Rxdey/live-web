@@ -10,12 +10,18 @@ const routes = [
   {
     path: '/LiveRoom',
     name: 'LiveRoom',
-    component: () => import('../views/LiveRoom.vue')
+    component: () => import('../views/LiveRoom.vue'),
+    meta: {
+      title: '主页'
+    }
   },
   {
     path: '/UserRoom',
     name: 'UserRoom',
-    component: () => import('../views/UserRoom.vue')
+    component: () => import('../views/UserRoom.vue'),
+    meta: {
+      title: '观看页'
+    }
   }
 ];
 

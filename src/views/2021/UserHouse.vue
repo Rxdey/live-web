@@ -39,7 +39,6 @@ export default {
     createPeer() {
       const PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
       this.remotePeer = new PeerConnection(null);
-      this.remotePeer = new RTCPeerConnection(null);
       this.remotePeer.onicecandidate = () => {
 
       };

@@ -1,95 +1,77 @@
 <template>
-  <div class="UserRoom">
-    <video id="video"></video>
-    <button @click="handleJoin">开始</button>
+  <div class="user-room">
+    <div class="video-wrap">
+      <video id="video" autoplay="autoplay" playsinline controls="controls"></video>
+    </div>
   </div>
 </template>
 
 <script>
-import io from 'socket.io-client';
-import { reactive, ref, toRefs, onMounted, computed } from '@vue/runtime-dom';
+import { onMounted, onUnmounted, reactive, toRefs } from '@vue/runtime-dom';
+import { useLiveStart } from './composition';
 
 export default {
   name: 'UserRoom',
   components: {
   },
   setup(props, context) {
-    const data = reactive({
-      remotePeer: null,
-      socket: null
-    });
-    const createPeer = () => {
-      const PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-      this.remotePeer = new PeerConnection(null);
-      this.remotePeer = new RTCPeerConnection(null);
-      this.remotePeer.onicecandidate = () => {
-
-      };
-      this.remotePeer.onaddstream = (obj) => {
-        const video = document.querySelector('#video');
-        video.srcObject = obj.stream;
-      };
-    };
-    const setLocalAndSendMessage = (sessionDescription) => {
-      this.remotePeer.setLocalDescription(sessionDescription);
-      console.log('setLocalAndSendMessage sending message', sessionDescription);
-      this.sendMessage(sessionDescription);
-    };
-    const createConnect = () => {
-      this.socket = io('http://localhost:3000');
-      this.socket.on('receiveMsg', msg => {
-        console.log('普通消息', msg);
-      });
-      this.socket.on('message', message => {
-        const { msg } = message;
-        if (msg.type === 'candidate') {
-          const candidate = new RTCIceCandidate({
-            sdpMLineIndex: msg.label,
-            candidate: msg.candidate
-          });
-          this.remotePeer.addIceCandidate(candidate);
-        }
-        if (msg.type === 'offer') {
-          this.remotePeer.setRemoteDescription(new RTCSessionDescription(msg));
-          this.remotePeer.createAnswer().then(
-            setLocalAndSendMessage,
-            error => { console.log(error); }
-          );
-        }
-        if (msg.type === 'answer') {
-          this.remotePeer.setRemoteDescription(new RTCSessionDescription(msg));
-        }
-        if (msg.type === 'bye') {
-          console.log('房主已离开');
-          this.remotePeer.close();
-          this.remotePeer = null;
-        }
-      });
+    const currentDetail = {
+      roomName: 'rxdey',
+      client: '洞洞',
+      userType: 2
     };
 
-    const sendMessage = (message) => {
-      const msg = { msg: message, roomName: 'rxdey', client: '主播' };
-      this.socket.emit('message', msg);
-    };
-    // 加入房间
-    const handleJoin = () => {
-      this.socket.emit('joinRoom', { roomName: 'rxdey' }, message => {
-        console.log(`加入房间：${JSON.stringify(message)}`);
-        const msg = { msg: '洞洞加入Room', roomName: message.roomName, client: '洞洞' };
-        this.socket.emit('sendMsg', msg);
-      });
-    };
+    const { socket, peer, sendMessage } = useLiveStart(currentDetail);
+
     onMounted(() => {
-      createConnect();
-      createPeer();
+      const video = document.querySelector('#video');
+      socket.emit('joinRoom', { roomName: currentDetail.roomName }, (res) => {
+        console.log(`加入房间：${JSON.stringify(currentDetail.client)}`);
+        // state 1：普通消息， 2 加入房间
+        const msg = { msg: `${currentDetail.client}加入Room`, state: 2, ...currentDetail };
+        socket.emit('sendMsg', msg);
+      });
+      peer.onaddstream = (obj) => {
+        if (!video) {
+          console.log('没有找到指定video元素');
+          return;
+        }
+        video.srcObject = obj.stream;
+        video.oncanplay = () => {
+          // setTimeout(() => {
+          //   video.play();
+          // }, 1000);
+          video.autoplay = 'autoplay';
+        };
+      };
+      socket.on('receiveMsg', data => {
+        const { state } = data;
+        console.log(data);
+      });
+    });
+    onUnmounted(() => {
+      peer.close();
+      socket.emit('leaveRoom', { roomName: currentDetail.roomName });
     });
     return {
-      ...toRefs(data),
-      sendMessage
+
     };
   }
 };
 </script>
 
 <style lang="less">
+.user-room {
+  height: 100%;
+  padding: 30px;
+  .video-wrap {
+    margin-bottom: 30px;
+  }
+  #video {
+    width: 980px;
+    min-height: 400px;
+    background: #333;
+    outline: none;
+  }
+}
 </style>
