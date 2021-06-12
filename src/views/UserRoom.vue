@@ -1,13 +1,37 @@
 <template>
-  <div class="user-room">
-    <div class="video-wrap">
-      <video id="video" autoplay="autoplay" playsinline controls="controls"></video>
-    </div>
-  </div>
-  <el-dialog title="加入吧" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
+  <el-container class="live-room router-page">
+    <el-main>
+      <div class="video-wrap">
+        <div class="video-main">
+          <video id="video" class="video-control" autoplay playsinline controls></video>
+        </div>
+      </div>
+    </el-main>
+    <el-aside width="300px" class="live-aside">
+      <div class="message-wrap">
+        <div class="user-message">
+          <div class="message-card" v-for="(item, index) in messageList" :key="index">
+            <div class="message-card__message" :class="{active: userDetail.userId === item.userId}">
+              <span class="name">{{item.name}}: </span>
+              <span class="msg">{{item.msg}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="user-input">
+          <input type="text" maxlength="20" v-model="msgVal" placeholder="发送消息吧~" @keydown.enter="handleSendMessage">
+          <p class="tip">{{msgVal.length}}/20</p>
+        </div>
+        <div class="user-button">
+          <el-button size="mini" round type="primary" @click="handleSendMessage">发送</el-button>
+        </div>
+      </div>
+    </el-aside>
+  </el-container>
+
+  <el-dialog title="加入房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
       <el-form-item label="用户名">
-        <el-input v-model="userDetail.client"></el-input>
+        <el-input v-model="userDetail.client" maxlength="12"></el-input>
       </el-form-item>
       <el-form-item label="roomName">
         <el-input v-model="userDetail.roomName"></el-input>
@@ -22,16 +46,17 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted, reactive, toRefs, ref, getCurrentInstance } from '@vue/runtime-dom';
+import { onMounted, reactive, toRefs, ref, getCurrentInstance } from '@vue/runtime-dom';
 import { onBeforeRouteLeave } from 'vue-router';
 import { createId } from '@/common/util';
 import { io } from 'socket.io-client';
+import { SERVICE } from '@/conf/conf';
 
 export default {
   name: 'UserRoom',
   components: {
   },
-  setup(props, context) {
+  setup (props, context) {
     const { proxy } = getCurrentInstance();
     // 用户信息
     const state = reactive({
@@ -42,15 +67,31 @@ export default {
         userId: createId()
       },
       peer: null,
-      socket: null
+      socket: null,
+      stream: null,
+      messageList: []
     });
+    const msgVal = ref('');
     const dialogVisible = ref(true);
 
     const sendMessage = (message) => {
       const msg = { msg: message, ...state.userDetail };
       state.socket.emit('message', msg);
     };
-    const handleClose = (done) => {
+    const handleClose = (done) => { };
+    const createMessage = (userId, name, msg) => {
+      state.messageList.push({ userId, name, msg });
+    };
+    const handleSendMessage = () => {
+      if (!msgVal.value.trim()) {
+        return;
+      }
+      // 2 加入房间 3 普通消息
+      const msg = { msg: msgVal.value, state: 3, ...state.userDetail };
+      createMessage(state.userDetail.userId, state.userDetail.client, msgVal.value);
+      state.socket.emit('sendMsg', msg, () => {
+        msgVal.value = '';
+      });
     };
     const handleSubmit = () => {
       if (!state.userDetail.roomName || !state.userDetail.client) {
@@ -60,12 +101,13 @@ export default {
       window.localStorage.setItem('roomName', state.userDetail.roomName);
       window.localStorage.setItem('client', state.userDetail.client);
       dialogVisible.value = false;
-      state.socket = io();
+      state.socket = io(SERVICE);
       const video = document.querySelector('#video');
       state.peer = new RTCPeerConnection(null);
       state.peer.onaddstream = (obj) => {
         if (!video) { console.log('没有找到指定video元素'); return; }
         video.srcObject = obj.stream;
+        state.stream = obj.stream;
         video.oncanplay = () => {
           video.autoplay = 'autoplay';
           video.play();
@@ -94,7 +136,19 @@ export default {
         }
       });
       state.socket.on('receiveMsg', data => {
-        console.log(data);
+        if (data.state === 3) {
+          const { client, msg, userId } = data;
+          createMessage(userId, client, msg);
+        }
+      });
+      state.socket.on('close', data => {
+        console.log('主播已离开');
+        state.peer.removeStream(state.stream);
+        state.stream.getTracks().forEach(track => track.stop());
+        document.querySelector('#video').currentTime = 0;
+        document.querySelector('#video').pause();
+        state.peer = null;
+        state.stream = null;
       });
       state.socket.emit('joinRoom', state.userDetail, (res) => {
         console.log(`加入房间：${JSON.stringify(state.userDetail.client)}`);
@@ -115,43 +169,16 @@ export default {
     });
     return {
       ...toRefs(state),
+      msgVal,
       dialogVisible,
       handleClose,
-      handleSubmit
+      handleSubmit,
+      handleSendMessage
     };
   }
 };
 </script>
 
 <style lang="less">
-.user-room {
-  height: 100%;
-  padding: 30px;
-  .video-wrap {
-    margin-bottom: 30px;
-  }
-  #video {
-    width: 980px;
-    max-width: 100%;
-    height: 450px;
-    background: #333;
-    outline: none;
-  }
-}
-.el-dialog--center {
-  min-width: 320px;
-}
-@media screen and (max-width: 980px) {
-  .user-room {
-    padding: 0;
-  }
-}
-@media screen and (max-width: 680px) {
-  .user-room {
-    #video {
-      height: 320px;
-      max-height: 40%;
-    }
-  }
-}
+@import url("./live.less");
 </style>
