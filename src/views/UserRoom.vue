@@ -50,7 +50,6 @@ import { onMounted, reactive, toRefs, ref, getCurrentInstance } from '@vue/runti
 import { onBeforeRouteLeave } from 'vue-router';
 import { createId } from '@/common/util';
 import { io } from 'socket.io-client';
-import { SERVICE } from '@/conf/conf';
 
 export default {
   name: 'UserRoom',
@@ -101,7 +100,7 @@ export default {
       window.localStorage.setItem('roomName', state.userDetail.roomName);
       window.localStorage.setItem('client', state.userDetail.client);
       dialogVisible.value = false;
-      state.socket = io(SERVICE);
+      state.socket = io(process.env.VUE_APP_SERVICE);
       const video = document.querySelector('#video');
       state.peer = new RTCPeerConnection(null);
       state.peer.onaddstream = (obj) => {

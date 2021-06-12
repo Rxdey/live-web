@@ -54,7 +54,6 @@
 <script>
 import { getCurrentInstance, onMounted, reactive, ref, toRefs } from '@vue/runtime-dom';
 import { io } from 'socket.io-client';
-import { SERVICE } from '@/conf/conf';
 import { onBeforeUnmount } from '@vue/runtime-core';
 import { createId } from '@/common/util';
 
@@ -153,7 +152,7 @@ export default {
       window.localStorage.setItem('upRoomName', state.userDetail.roomName);
       window.localStorage.setItem('upClient', state.userDetail.client);
       dialogVisible.value = false;
-      state.socket = io(SERVICE);
+      state.socket = io(process.env.VUE_APP_SERVICE);
       state.socket.emit('joinRoom', state.userDetail, (data) => {
         console.log(`up加入房间：${JSON.stringify(data)}`);
       });
