@@ -110,6 +110,7 @@ export default {
     };
     const handleJoin = async () => {
       const video = document.querySelector('#video');
+      sendMessage({ type: 'upJoin' });
       const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       video.srcObject = localStream;
       state.localStream = localStream;

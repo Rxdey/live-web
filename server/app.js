@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 socketIo.on('connection', (clientSocket) => {
   clientSocket.on('joinRoom', (data, fn = () => { }) => {
     clientSocket.join(data.roomName); // join(房间名)加入房间
-    fn({ code: 0, msg: '加入房间成功', roomName: data.roomName });
+    fn({ code: 0, msg: '加入房间成功', roomName: data.roomName, socketId: clientSocket.id });
   });
 
   clientSocket.on('leaveRoom', (data, fn = () => { }) => {
@@ -52,7 +52,7 @@ socketIo.on('connection', (clientSocket) => {
   });
 });
 
-const port = process.env.PORT || 3000;
+const port = 3999;
 http.listen(port, () => {
   console.log(`server running @ http://localhost:${port}`);
 });

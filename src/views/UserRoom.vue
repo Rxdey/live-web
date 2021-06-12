@@ -92,15 +92,7 @@ export default {
         msgVal.value = '';
       });
     };
-    const handleSubmit = () => {
-      if (!state.userDetail.roomName || !state.userDetail.client) {
-        proxy.$message.warning('请输入昵称和房间');
-        return;
-      }
-      window.localStorage.setItem('roomName', state.userDetail.roomName);
-      window.localStorage.setItem('client', state.userDetail.client);
-      dialogVisible.value = false;
-      state.socket = io(process.env.VUE_APP_SERVICE);
+    const createPeer = () => {
       const video = document.querySelector('#video');
       state.peer = new RTCPeerConnection(null);
       state.peer.onaddstream = (obj) => {
@@ -112,6 +104,27 @@ export default {
           video.play();
         };
       };
+    };
+    const joinRoom = () => {
+      state.socket.emit('joinRoom', state.userDetail, (res) => {
+        console.log(`加入房间：${JSON.stringify(state.userDetail.client)}`);
+        const msg = { msg: `${state.userDetail.client}加入Room`, state: 2, ...state.userDetail };
+        if (!state.peer) {
+          createPeer();
+        }
+        state.socket.emit('sendMsg', msg);
+      });
+    };
+    const handleSubmit = () => {
+      if (!state.userDetail.roomName || !state.userDetail.client) {
+        proxy.$message.warning('请输入昵称和房间');
+        return;
+      }
+      window.localStorage.setItem('roomName', state.userDetail.roomName);
+      window.localStorage.setItem('client', state.userDetail.client);
+      dialogVisible.value = false;
+      state.socket = io(process.env.VUE_APP_SERVICE);
+      createPeer();
       // 客户端接收offer和candidate
       state.socket.on('message', data => {
         const { msg } = data;
@@ -133,6 +146,9 @@ export default {
             error => { console.log(error); }
           );
         }
+        if (msg.type === 'upJoin') {
+          joinRoom();
+        }
       });
       state.socket.on('receiveMsg', data => {
         if (data.state === 3) {
@@ -141,7 +157,8 @@ export default {
         }
       });
       state.socket.on('close', data => {
-        console.log('主播已离开');
+        console.log('主播已离开', state.stream);
+        if (!state.stream) return;
         state.peer.removeStream(state.stream);
         state.stream.getTracks().forEach(track => track.stop());
         document.querySelector('#video').currentTime = 0;
@@ -149,11 +166,7 @@ export default {
         state.peer = null;
         state.stream = null;
       });
-      state.socket.emit('joinRoom', state.userDetail, (res) => {
-        console.log(`加入房间：${JSON.stringify(state.userDetail.client)}`);
-        const msg = { msg: `${state.userDetail.client}加入Room`, state: 2, ...state.userDetail };
-        state.socket.emit('sendMsg', msg);
-      });
+      joinRoom();
     };
     onMounted(() => {
       // 初始化用户信息
