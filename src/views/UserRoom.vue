@@ -2,8 +2,14 @@
   <el-container class="live-room router-page">
     <el-main>
       <div class="video-wrap">
+        <p class="room-name">房间号: {{userDetail.roomName}}</p>
         <div class="video-main">
           <video id="video" class="video-control" autoplay playsinline controls></video>
+        </div>
+        <div class="tool-wrap">
+          <div class="button-wrap">
+            <el-button size="small" round type="primary" @click="handleReload">刷新</el-button>
+          </div>
         </div>
       </div>
     </el-main>
@@ -30,11 +36,11 @@
 
   <el-dialog title="加入房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
-      <el-form-item label="用户名">
+      <el-form-item label="昵称">
         <el-input v-model="userDetail.client" maxlength="12"></el-input>
       </el-form-item>
-      <el-form-item label="roomName">
-        <el-input v-model="userDetail.roomName"></el-input>
+      <el-form-item label="房间号">
+        <el-input v-model="userDetail.roomName" placeholder="要知道对方房间号才能连接哦"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -120,6 +126,10 @@ export default {
         proxy.$message.warning('请输入昵称和房间');
         return;
       }
+      if (!/^[0-9a-zA-Z]+$/.test(state.userDetail.roomName)) {
+        proxy.$message.warning('房间号只能输入数字或字母');
+        return;
+      }
       window.localStorage.setItem('roomName', state.userDetail.roomName);
       window.localStorage.setItem('client', state.userDetail.client);
       dialogVisible.value = false;
@@ -168,6 +178,17 @@ export default {
       });
       joinRoom();
     };
+    const handleReload = () => {
+      if (state.stream) {
+        state.peer.removeStream(state.stream);
+        state.stream.getTracks().forEach(track => track.stop());
+        document.querySelector('#video').currentTime = 0;
+        document.querySelector('#video').pause();
+      }
+      state.peer = null;
+      state.stream = null;
+      handleSubmit();
+    };
     onMounted(() => {
       // 初始化用户信息
       state.userDetail.roomName = window.localStorage.getItem('roomName') || state.userDetail.roomName;
@@ -185,7 +206,8 @@ export default {
       dialogVisible,
       handleClose,
       handleSubmit,
-      handleSendMessage
+      handleSendMessage,
+      handleReload
     };
   }
 };

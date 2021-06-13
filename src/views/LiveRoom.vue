@@ -2,6 +2,7 @@
   <el-container class="live-room router-page">
     <el-main>
       <div class="video-wrap">
+        <p class="room-name">房间号: {{userDetail.roomName}}</p>
         <div class="video-main">
           <video id="video" class="video-control" autoplay playsinline controls></video>
         </div>
@@ -34,12 +35,12 @@
     </el-aside>
   </el-container>
 
-  <el-dialog title="创建一个房间阿" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
+  <el-dialog title="创建一个房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
-      <el-form-item label="用户名">
+      <el-form-item label="昵称">
         <el-input v-model="userDetail.client" maxlength="12"></el-input>
       </el-form-item>
-      <el-form-item label="roomName">
+      <el-form-item label="房间号">
         <el-input v-model="userDetail.roomName"></el-input>
       </el-form-item>
     </el-form>
@@ -147,7 +148,11 @@ export default {
     const handleClose = () => { };
     const handleSubmit = () => {
       if (!state.userDetail.roomName || !state.userDetail.client) {
-        proxy.$message.warning('请输入用户名和房间');
+        proxy.$message.warning('请输入昵称和房间');
+        return;
+      }
+      if (!/^[0-9a-zA-Z]+$/.test(state.userDetail.roomName)) {
+        proxy.$message.warning('房间号只能输入数字或字母');
         return;
       }
       window.localStorage.setItem('upRoomName', state.userDetail.roomName);

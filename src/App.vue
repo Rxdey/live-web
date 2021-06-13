@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-header class="header" height="50px"></el-header>
+    <!-- <el-header class="header" height="50px"></el-header> -->
     <el-main class="main">
       <router-view/>
     </el-main>
