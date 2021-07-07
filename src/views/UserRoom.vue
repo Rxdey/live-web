@@ -1,6 +1,6 @@
 <template>
-  <el-container class="live-room router-page">
-    <el-main>
+  <div class="live-room router-page">
+    <div class="live-wrap">
       <div class="video-wrap">
         <p class="room-name">房间号: {{userDetail.roomName}}</p>
         <div class="video-main">
@@ -12,8 +12,8 @@
           </div>
         </div>
       </div>
-    </el-main>
-    <el-aside width="300px" class="live-aside">
+    </div>
+    <div class="live-aside">
       <div class="message-wrap">
         <div class="user-message">
           <div class="message-card" v-for="(item, index) in messageList" :key="index">
@@ -31,8 +31,8 @@
           <el-button size="mini" round type="primary" @click="handleSendMessage">发送</el-button>
         </div>
       </div>
-    </el-aside>
-  </el-container>
+    </div>
+  </div>
 
   <el-dialog title="加入房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
@@ -100,7 +100,7 @@ export default {
     };
     const createPeer = () => {
       const video = document.querySelector('#video');
-      state.peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
+      state.peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
       state.peer.onaddstream = (obj) => {
         if (!video) { console.log('没有找到指定video元素'); return; }
         video.srcObject = obj.stream;

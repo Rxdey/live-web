@@ -1,74 +1,79 @@
 .live-room {
-  .el-main {
-    padding: 10px;
+  display: flex;
+  flex-flow: row wrap;
+}
+.live-wrap {
+  flex: 1;
+  width: 1px;
+  margin-right: 20px;
+  min-width: 800px;
+}
+.live-aside {
+  width: 250px;
+}
+.video-wrap {
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 15px 0 30px 0;
+  .room-name {
+    padding: 0 30px;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 18px;
   }
-  .video-wrap {
+  .video-main {
+    margin-bottom: 30px;
+  }
+  .video-control {
+    width: 100%;
+    background: #333;
+    outline: none;
+    height: 500px;
+  }
+}
+.message-wrap {
+  border-radius: 15px;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+  background: #fff;
+  padding: 60px 0 30px 0;
+  .user-message {
+    flex: 1;
+    height: 1px;
+    background: #f7f7f7;
+    padding: 0 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .user-input {
     background: #fff;
-    border-radius: 15px;
-    overflow: hidden;
-    padding: 15px 0 30px 0;
-    .room-name {
-      padding: 0 30px;
-      margin-bottom: 15px;
-      text-align: left;
-      font-size: 18px;
-    }
-    .video-main {
-      margin-bottom: 30px;
-    }
-    .video-control {
+    border-top: 1px solid #f3f3f3;
+    border-bottom: 1px solid #f3f3f3;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    input {
       width: 100%;
-      background: #333;
+      font-size: 12px;
+      height: 34px;
+      padding: 0 15px;
+      line-height: 38px;
+      color: #333;
+      border: none;
       outline: none;
-      height: 500px;
     }
-  }
-  .live-aside {
-    padding: 10px;
-  }
-  .message-wrap {
-    border-radius: 15px;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-flow: column;
-    background: #fff;
-    padding: 60px 0 30px 0;
-    .user-message {
-      flex: 1;
-      height: 1px;
-      background: #f7f7f7;
-      padding: 0 10px;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-    .user-input {
-      background: #fff;
-      border-top: 1px solid #f3f3f3;
-      border-bottom: 1px solid #f3f3f3;
-      padding: 5px 0;
-      margin-bottom: 10px;
-      input {
-        width: 100%;
-        font-size: 12px;
-        height: 34px;
-        padding: 0 15px;
-        line-height: 38px;
-        color: #333;
-        border: none;
-        outline: none;
-      }
-      .tip {
-        font-size: 11px;
-        text-align: right;
-        color: #999;
-        padding: 0 20px;
-      }
-    }
-    .user-button {
+    .tip {
+      font-size: 11px;
       text-align: right;
+      color: #999;
       padding: 0 20px;
     }
+  }
+  .user-button {
+    text-align: right;
+    padding: 0 20px;
   }
 }
 .message-card {

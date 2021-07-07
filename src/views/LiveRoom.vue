@@ -1,6 +1,6 @@
 <template>
-  <el-container class="live-room router-page">
-    <el-main>
+  <div class="live-room router-page">
+    <div class="live-wrap">
       <div class="video-wrap">
         <p class="room-name">房间号: {{userDetail.roomName}}</p>
         <div class="video-main">
@@ -13,8 +13,8 @@
           </div>
         </div>
       </div>
-    </el-main>
-    <el-aside width="300px" class="live-aside">
+    </div>
+    <div class="live-aside">
       <div class="message-wrap">
         <div class="user-message">
           <div class="message-card" v-for="(item, index) in messageList" :key="index">
@@ -32,8 +32,8 @@
           <el-button size="mini" round type="primary" @click="handleSendMessage">发送</el-button>
         </div>
       </div>
-    </el-aside>
-  </el-container>
+    </div>
+  </div>
 
   <el-dialog title="创建一个房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
@@ -93,7 +93,7 @@ export default {
     };
     // 创建RTCPeerConnection连接
     const createPeer = (stream, data) => {
-      const peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
+      const peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
       peer.onicecandidate = (event) => {
         if (!event.candidate) return;
         sendMessage({
@@ -112,8 +112,9 @@ export default {
     const handleJoin = async () => {
       const video = document.querySelector('#video');
       sendMessage({ type: 'upJoin' });
-      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      // const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      // const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      // 抓取屏幕 不要设置audio，不然移动端无法播放
+      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       video.srcObject = localStream;
       state.localStream = localStream;
       state.peerList.map(item => {
