@@ -117,7 +117,6 @@ export default {
       const video = document.querySelector('#video');
       sendMessage({ type: 'upJoin' });
       // const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      // 抓取屏幕 不要设置audio，不然移动端无法播放
       const localStream = state.mediaType ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) : await navigator.mediaDevices.getDisplayMedia({ video: true });
       video.srcObject = localStream;
       state.localStream = localStream;
