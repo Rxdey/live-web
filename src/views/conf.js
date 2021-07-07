@@ -4,7 +4,7 @@ const option = {
     { url: 'stun:stun2.l.google.com:19302' },
     { url: 'stun:stun.schlund.de' }
   ],
-  // sdpSemantics: 'plan-b'
-  sdpSemantics: 'unified-plan'
+  sdpSemantics: 'plan-b'
+  // sdpSemantics: 'unified-plan'
 };
 export default option;
