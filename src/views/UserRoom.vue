@@ -56,6 +56,7 @@ import { onMounted, reactive, toRefs, ref, getCurrentInstance } from '@vue/runti
 import { onBeforeRouteLeave } from 'vue-router';
 import { createId } from '@/common/util';
 import { io } from 'socket.io-client';
+import option from './conf';
 
 export default {
   name: 'UserRoom',
@@ -101,7 +102,7 @@ export default {
     const createPeer = () => {
       const video = document.querySelector('#video');
       // state.peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
-      state.peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
+      state.peer = new RTCPeerConnection(option);
       state.peer.onaddstream = (obj) => {
         if (!video) { console.log('没有找到指定video元素'); return; }
         video.srcObject = obj.stream;

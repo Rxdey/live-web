@@ -57,6 +57,7 @@ import { getCurrentInstance, onMounted, reactive, ref, toRefs } from '@vue/runti
 import { io } from 'socket.io-client';
 import { onBeforeUnmount } from '@vue/runtime-core';
 import { createId } from '@/common/util';
+import option from './conf';
 
 export default {
   name: 'LiveRoom',
@@ -94,7 +95,7 @@ export default {
     // 创建RTCPeerConnection连接
     const createPeer = (stream, data) => {
       // const peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
-      const peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
+      const peer = new RTCPeerConnection(option);
       peer.onicecandidate = (event) => {
         if (!event.candidate) return;
         sendMessage({
