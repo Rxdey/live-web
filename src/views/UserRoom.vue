@@ -34,7 +34,7 @@
     </el-aside>
   </el-container>
 
-  <el-dialog title="加入房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
+  <el-dialog class="dialog" title="加入房间哦" v-model="dialogVisible" width="30%" :before-close="handleClose" :show-close="false" center>
     <el-form label-position="left" label-width="100px" :model="userDetail">
       <el-form-item label="昵称">
         <el-input v-model="userDetail.client" maxlength="12"></el-input>
