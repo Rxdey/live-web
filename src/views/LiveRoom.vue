@@ -93,7 +93,7 @@ export default {
     };
     // 创建RTCPeerConnection连接
     const createPeer = (stream, data) => {
-      const peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
+      const peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
       peer.onicecandidate = (event) => {
         if (!event.candidate) return;
         sendMessage({
@@ -112,7 +112,8 @@ export default {
     const handleJoin = async () => {
       const video = document.querySelector('#video');
       sendMessage({ type: 'upJoin' });
-      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      // const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       video.srcObject = localStream;
       state.localStream = localStream;
       state.peerList.map(item => {
