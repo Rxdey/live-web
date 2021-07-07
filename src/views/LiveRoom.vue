@@ -117,7 +117,7 @@ export default {
       const video = document.querySelector('#video');
       sendMessage({ type: 'upJoin' });
       // const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      const localStream = state.mediaType ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) : await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const localStream = state.mediaType ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) : await navigator.mediaDevices.getDisplayMedia({ video: { MediaSource: 'screen' } });
       video.srcObject = localStream;
       state.localStream = localStream;
       state.peerList.map(item => {
