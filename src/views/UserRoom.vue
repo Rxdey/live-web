@@ -100,7 +100,8 @@ export default {
     };
     const createPeer = () => {
       const video = document.querySelector('#video');
-      state.peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
+      // state.peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
+      state.peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
       state.peer.onaddstream = (obj) => {
         if (!video) { console.log('没有找到指定video元素'); return; }
         video.srcObject = obj.stream;

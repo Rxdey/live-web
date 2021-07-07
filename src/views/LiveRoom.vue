@@ -93,7 +93,8 @@ export default {
     };
     // 创建RTCPeerConnection连接
     const createPeer = (stream, data) => {
-      const peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
+      // const peer = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
+      const peer = new RTCPeerConnection({ sdpSemantics: 'plan-b' });
       peer.onicecandidate = (event) => {
         if (!event.candidate) return;
         sendMessage({
