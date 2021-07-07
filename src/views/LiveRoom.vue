@@ -8,6 +8,7 @@
         </div>
         <div class="tool-wrap">
           <div class="button-wrap">
+            <el-switch class="swuitc" v-model="mediaType" active-text="摄像头" inactive-text="屏幕" :disabled="!!localStream"/>
             <el-button size="small" round type="primary" @click="handleJoin" :disabled="!!localStream">开始</el-button>
             <el-button size="small" round @click="handleStop" :disabled="!localStream">停止</el-button>
           </div>
@@ -75,7 +76,8 @@ export default {
       peerList: [],
       localStream: null,
       socket: null,
-      messageList: []
+      messageList: [],
+      mediaType: false
     });
     const msgVal = ref('');
     const dialogVisible = ref(true);
@@ -116,7 +118,7 @@ export default {
       sendMessage({ type: 'upJoin' });
       // const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       // 抓取屏幕 不要设置audio，不然移动端无法播放
-      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const localStream = state.mediaType ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true }) : await navigator.mediaDevices.getDisplayMedia({ video: true });
       video.srcObject = localStream;
       state.localStream = localStream;
       state.peerList.map(item => {

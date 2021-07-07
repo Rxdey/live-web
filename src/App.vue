@@ -78,7 +78,7 @@ body {
       flex-flow: column;
       .video-main {
         margin-bottom: 0px;
-        height: 100%;
+        height: 1px;
         flex: 1;
       }
       .video-control {
